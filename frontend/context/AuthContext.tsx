@@ -16,6 +16,8 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+    const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -26,10 +28,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const fetchUser = async () => {
         try {
-            const response = await fetch(
-                `http://192.168.1.19:3000/api/v1/user/data`,
-                { credentials: "include" }
-            );
+            const response = await fetch(`${BASE_URL}/user/data`, {
+                credentials: "include",
+            });
 
             const result = await response.json();
             if (!response.ok) {
@@ -47,15 +48,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const login = async (email: string, password: string) => {
-        const response = await fetch(
-            "http://192.168.1.19:3000/api/v1/auth/login",
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ email, password }),
-            }
-        );
+        const response = await fetch(`${BASE_URL}/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ email, password }),
+        });
 
         const result = await response.json();
 
@@ -66,15 +64,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const signup = async (name: string, email: string, password: string) => {
-        const response = await fetch(
-            "http://192.168.1.19:3000/api/v1/auth/signup",
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ name, email, password }),
-            }
-        );
+        const response = await fetch(`${BASE_URL}/auth/signup`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ name, email, password }),
+        });
         const result = await response.json();
         if (!response.ok) {
             throw result;
@@ -84,7 +79,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const logout = async () => {
-        await fetch("http://192.168.1.19:3000/api/v1/auth/logout", {
+        await fetch(`${BASE_URL}/auth/logout`, {
             method: "POST",
             credentials: "include",
         });
