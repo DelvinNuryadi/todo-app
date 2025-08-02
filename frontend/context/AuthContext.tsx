@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const fetchUser = async () => {
         try {
             const response = await fetch(
-                "http://192.168.127.2:3000/api/v1/user/data",
+                `http://192.168.1.19:3000/api/v1/user/data`,
                 { credentials: "include" }
             );
 
@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const login = async (email: string, password: string) => {
         const response = await fetch(
-            "http://192.168.127.2:3000/api/v1/auth/login",
+            "http://192.168.1.19:3000/api/v1/auth/login",
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -67,7 +67,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     const signup = async (name: string, email: string, password: string) => {
         const response = await fetch(
-            "http://192.168.127.2:3000/api/v1/auth/signup",
+            "http://192.168.1.19:3000/api/v1/auth/signup",
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -84,7 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const logout = async () => {
-        await fetch("http://192.168.127.2:3000/api/v1/auth/logout", {
+        await fetch("http://192.168.1.19:3000/api/v1/auth/logout", {
             method: "POST",
             credentials: "include",
         });

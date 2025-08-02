@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3000;
 
 const allowedOrigins = [
     "http://localhost:8081", // buat web
-    "http://192.168.127.2:8081", // buat device atau emulator via Expo
+    "http://192.168.1.19:8081", // buat device atau emulator via Expo
 ];
 
 app.use(
