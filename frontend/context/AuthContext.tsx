@@ -13,11 +13,11 @@ type AuthContextType = {
     logout: () => Promise<void>;
 };
 
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 

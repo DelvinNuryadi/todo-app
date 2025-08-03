@@ -6,6 +6,7 @@ import {
     updateTodo,
 } from "../controllers/todoController.js";
 import isAuth from "../middleware/isAuth.js";
+import { body } from "express-validator";
 
 const router = express.Router();
 
@@ -13,7 +14,12 @@ const router = express.Router();
 router.get("/", isAuth, getTodos);
 
 // add-todo
-router.post("/add-todo", isAuth, addTodo);
+router.post(
+    "/add-todo",
+    [body("title").notEmpty().withMessage("Title cannot be empty")],
+    isAuth,
+    addTodo
+);
 
 // update-todo
 router.put("/:id", isAuth, updateTodo);

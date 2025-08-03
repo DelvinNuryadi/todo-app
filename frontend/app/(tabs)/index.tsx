@@ -2,6 +2,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { useEffect, useState } from "react";
 import {
+    Alert,
     FlatList,
     Modal,
     Pressable,
@@ -18,34 +19,63 @@ type TodoType = {
     completed: boolean;
 };
 
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+
 export default function HomeScreen() {
     const { user } = useAuth();
     const [showModal, setShowModal] = useState(false);
     const [todos, setTodos] = useState<TodoType[]>([]);
+    const [todo, setTodo] = useState<string>("");
+
+    useEffect(() => {
+        getTodos();
+    }, []);
 
     async function getTodos() {
         try {
-            const response = await fetch(
-                "http://192.168.1.19:3000/api/v1/todo"
-            );
+            const response = await fetch(`${BASE_URL}/todo`);
             const result = await response.json();
-            console.log(result.data);
             const mappedTodos = result.data.map((todo: TodoType) => ({
                 _id: todo._id,
                 user_id: todo.user,
                 title: todo.title,
                 completed: todo.completed,
             }));
-            console.log(mappedTodos);
+
             setTodos(mappedTodos);
         } catch (error) {
             console.log("Error bang:", error);
         }
     }
 
-    useEffect(() => {
-        getTodos();
-    }, []);
+    async function handleAddTodo() {
+        try {
+            const response = await fetch(`${BASE_URL}/todo/add-todo`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+                body: JSON.stringify({}),
+            });
+
+            // console.log(response);
+            const result = await response.json();
+            console.log(result);
+
+            // if(!response.ok){
+            //     const
+            // }
+            // if(!response.ok){
+
+            // }
+
+            // setTodo("");
+            // await getTodos();
+        } catch (error) {
+            Alert.alert("Error");
+        }
+    }
 
     return (
         <View className="flex-1">
@@ -63,8 +93,13 @@ export default function HomeScreen() {
                         placeholder="Add new task..."
                         placeholderTextColor="#9CA3AF"
                         className="flex-1 bg-white px-4 py-4 text-lg rounded-lg border border-gray-200"
+                        value={todo}
+                        onChangeText={(val) => setTodo(val)}
                     />
-                    <TouchableOpacity className="bg-blue-500 px-6 py-4 rounded-lg items-center justify-center">
+                    <TouchableOpacity
+                        onPress={handleAddTodo}
+                        className="bg-blue-500 px-6 py-4 rounded-lg items-center justify-center"
+                    >
                         <Text className="text-white text-xl font-bold">+</Text>
                     </TouchableOpacity>
                 </View>

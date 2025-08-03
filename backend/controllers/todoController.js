@@ -1,4 +1,5 @@
 import todoModel from "../models/todoModel.js";
+import { validationResult } from "express-validator";
 
 export const getTodos = async (req, res, next) => {
     try {
@@ -18,6 +19,13 @@ export const getTodos = async (req, res, next) => {
 };
 
 export const addTodo = async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty) {
+        const error = new Error("Validation failed");
+        error.statusCode = 422;
+        error.data = errors.array();
+        throw error;
+    }
     const { title } = req.body;
 
     try {
