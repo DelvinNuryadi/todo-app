@@ -35,15 +35,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const response = await authFetch(`/user/data`);
 
             const result = await response.json();
+
             if (!response.ok) {
-                throw new Error("Unauthorized or invalid user data");
+                const error = new Error(result.message);
+                throw error;
             }
             setUser(result.data);
             router.replace("/(tabs)");
         } catch (error) {
             setUser(null);
             router.replace("/(auth)");
-            console.log("error bang: ", error);
         } finally {
             setLoading(false);
         }

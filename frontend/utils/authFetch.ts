@@ -8,6 +8,7 @@ export const authFetch = async (
     retry = true
 ): Promise<Response> => {
     const token = await getAccessToken();
+    console.log("ISI TOKEN", token);
     const response = await fetch(`${BASE_URL}${url}`, {
         ...options,
         headers: {
@@ -17,6 +18,7 @@ export const authFetch = async (
         },
     });
 
+    console.log("AUTH FETCH", response.status);
     // kalau token expired
     if (response.status === 401 && retry) {
         console.log("access token expired, trying refresh token...");

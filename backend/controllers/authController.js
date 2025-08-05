@@ -149,7 +149,7 @@ export const refreshAccessToken = async (req, res, next) => {
         const newAccessToken = jwt.sign(
             { id: decoded.id },
             process.env.JWT_ACCESS_SECRET,
-            { expiresIn: "15m" }
+            { expiresIn: "1m" }
         );
 
         return res
@@ -157,7 +157,7 @@ export const refreshAccessToken = async (req, res, next) => {
             .json({ success: true, accessToken: newAccessToken });
     } catch (error) {
         if (!error.statusCode) {
-            error.statusCode = 505;
+            error.statusCode = 500;
         }
         next(error);
     }
