@@ -6,7 +6,12 @@ import { ToastProvider } from "react-native-toast-notifications";
 export default function RootLayout() {
     return (
         <SafeAreaView className="flex-1 bg-black">
-            <ToastProvider>
+            <ToastProvider
+                offsetTop={50}
+                duration={3000}
+                placement="top"
+                animationType="slide-in"
+            >
                 <AuthProvider>
                     <Slot />
                 </AuthProvider>

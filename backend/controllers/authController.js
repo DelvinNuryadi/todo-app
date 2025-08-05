@@ -3,6 +3,18 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { validationResult } from "express-validator";
 
+const createAccessToken = (user) => {
+    return jwt.sign({ id: user._id }, process.env.JWT_ACCESS_SECRET, {
+        expiresIn: "1m",
+    });
+};
+
+const createRefreshToken = (user) => {
+    return jwt.sign({ id: user._id }, process.env.JWT_REFRESH_SECRET, {
+        expiresIn: "7d",
+    });
+};
+
 export const register = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -62,6 +74,7 @@ export const login = async (req, res, next) => {
         throw error;
     }
     const { email, password } = req.body;
+
     try {
         const user = await userModel.findOne({ email: email });
         if (!user) {
@@ -78,11 +91,10 @@ export const login = async (req, res, next) => {
             throw error;
         }
 
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-            expiresIn: "7d",
-        });
+        const accessToken = createAccessToken(user);
+        const refreshToken = createRefreshToken(user);
 
-        res.cookie("token", token, {
+        res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
@@ -92,6 +104,7 @@ export const login = async (req, res, next) => {
         return res.status(200).json({
             success: true,
             message: "Login successfully",
+            accessToken: accessToken,
             userData: {
                 id: user._id,
                 name: user.name,
@@ -116,6 +129,35 @@ export const logout = async (req, res, next) => {
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500;
+        }
+        next(error);
+    }
+};
+
+export const refreshAccessToken = async (req, res, next) => {
+    try {
+        const token = req.cookies.refreshToken;
+        console.log("hello world");
+        if (!token) {
+            const error = new Error("invalid refresh token");
+            error.statusCode = 401;
+            throw error;
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+
+        const newAccessToken = jwt.sign(
+            { id: decoded.id },
+            process.env.JWT_ACCESS_SECRET,
+            { expiresIn: "15m" }
+        );
+
+        return res
+            .status(200)
+            .json({ success: true, accessToken: newAccessToken });
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 505;
         }
         next(error);
     }

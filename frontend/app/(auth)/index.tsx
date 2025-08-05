@@ -1,8 +1,15 @@
+import LoginIcon from "@/app/components/icons/LoginIcon";
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "expo-router";
-
-import { useState } from "react";
-import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { useToast } from "react-native-toast-notifications";
 
 type ErrorType = {
@@ -27,11 +34,6 @@ export default function LoginScreen() {
             toast.show("Welcome", {
                 type: "success",
                 placement: "top",
-                duration: 4000,
-                animationType: "slide-in",
-                style: {
-                    marginTop: 50,
-                },
             });
         } catch (error: any) {
             const errors: ErrorType = {};
@@ -60,16 +62,16 @@ export default function LoginScreen() {
                     setEmail(val);
                     setFormErrors((prev) => ({ ...prev, email: "" }));
                 }}
-                className={`w-full border rounded-xl px-4 py-3 mb-1 text-black ${formErrors.email ? "border-red-500" : "border-gray-300"}`}
+                className={`w-full border rounded-xl px-4 py-3  text-black ${formErrors.email ? "border-red-500 mb-1" : "border-gray-300 mb-4"}`}
             />
 
-            <View className="w-full mb-4  h-4">
-                {formErrors.email && (
+            {formErrors.email && (
+                <View className="w-full mb-4 ">
                     <Text className=" text-red-500 text-sm">
                         {formErrors.email}
                     </Text>
-                )}
-            </View>
+                </View>
+            )}
             <TextInput
                 placeholder="Password"
                 value={password}
@@ -78,23 +80,31 @@ export default function LoginScreen() {
                     setFormErrors((prev) => ({ ...prev, password: "" }));
                 }}
                 secureTextEntry
-                className={`w-full border rounded-xl px-4 py-3 mb-1 text-black ${formErrors.password ? "border-red-500" : "border-gray-300"}`}
+                className={`w-full border rounded-xl px-4 py-3 text-black ${formErrors.password ? "border-red-500 mb-1" : "border-gray-300 mb-4"}`}
             />
-            <View className="w-full mb-4  h-4">
-                {formErrors.password && (
+            {formErrors.password && (
+                <View className="w-full mb-4">
                     <Text className=" text-red-500 text-sm">
                         {formErrors.password}
                     </Text>
-                )}
-            </View>
+                </View>
+            )}
 
             <TouchableOpacity
+                disabled={loading}
                 onPress={handleLogin}
-                className="bg-blue-500 w-full py-3 rounded-xl mb-4"
+                className="bg-blue-500 w-full py-3 rounded-xl mb-4 flex-row justify-center items-center gap-x-2"
             >
-                <Text className="text-center text-white font-bold">
-                    {loading ? "Loading..." : "Login"}
-                </Text>
+                {loading ? (
+                    <ActivityIndicator color="#fff" />
+                ) : (
+                    <>
+                        <LoginIcon width={18} height={18} color="#fff" />
+                        <Text className="text-center text-white font-bold text-lg">
+                            Login
+                        </Text>
+                    </>
+                )}
             </TouchableOpacity>
 
             <Text>

@@ -1,4 +1,7 @@
+import { authFetch } from "@/utils/authFetch";
+import { removeAccessToken } from "@/utils/token";
 import { router } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { createContext, useContext, useEffect, useState } from "react";
 
 type User = {
@@ -8,6 +11,7 @@ type User = {
 type AuthContextType = {
     user: User | null;
     loading: boolean;
+
     login: (email: string, password: string) => Promise<void>;
     signup: (name: string, email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
@@ -21,16 +25,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
-    // check login in first launch
+    // check token in first launch
     useEffect(() => {
         fetchUser();
     }, []);
 
     const fetchUser = async () => {
         try {
-            const response = await fetch(`${BASE_URL}/user/data`, {
-                credentials: "include",
-            });
+            const response = await authFetch(`/user/data`);
 
             const result = await response.json();
             if (!response.ok) {
@@ -51,7 +53,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const response = await fetch(`${BASE_URL}/auth/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include",
             body: JSON.stringify({ email, password }),
         });
 
@@ -60,6 +61,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (!response.ok) {
             throw result;
         }
+        await SecureStore.setItemAsync("accessToken", result.accessToken);
         await fetchUser();
     };
 
@@ -67,14 +69,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const response = await fetch(`${BASE_URL}/auth/signup`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            credentials: "include",
             body: JSON.stringify({ name, email, password }),
         });
         const result = await response.json();
         if (!response.ok) {
             throw result;
         }
-
         router.replace("/(auth)");
     };
 
@@ -84,6 +84,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             credentials: "include",
         });
 
+        await removeAccessToken();
         setUser(null);
         router.replace("/(auth)");
     };

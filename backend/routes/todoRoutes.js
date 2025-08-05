@@ -22,9 +22,9 @@ router.post(
 );
 
 // update-todo
-router.put("/:id", isAuth, updateTodo);
+router.put("/update/:id", isAuth, updateTodo);
 
 // delete-todo
-router.delete("/:id", isAuth, deleteTodo);
+router.delete("/delete/:id", isAuth, deleteTodo);
 
 export default router;

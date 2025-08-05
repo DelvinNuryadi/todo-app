@@ -1,8 +1,9 @@
 // app/(tabs)/index.tsx
 import { useAuth } from "@/context/AuthContext";
-import { useEffect, useState } from "react";
+import { authFetch } from "@/utils/authFetch";
+import { useEffect, useRef, useState } from "react";
 import {
-    Alert,
+    ActivityIndicator,
     FlatList,
     Modal,
     Pressable,
@@ -11,6 +12,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useToast } from "react-native-toast-notifications";
 
 type TodoType = {
     _id: string;
@@ -19,21 +21,37 @@ type TodoType = {
     completed: boolean;
 };
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+type AddTodoType = {
+    path: string;
+    msg: string;
+};
 
 export default function HomeScreen() {
+    const inputRef = useRef<TextInput>(null);
+    const toast = useToast();
     const { user } = useAuth();
     const [showModal, setShowModal] = useState(false);
     const [todos, setTodos] = useState<TodoType[]>([]);
+    const [addTodoError, setAddTodoError] = useState<string | null>(null);
     const [todo, setTodo] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false);
+    const [selectedTodo, setSelectedTodo] = useState<TodoType | null>(null);
 
     useEffect(() => {
         getTodos();
     }, []);
 
+    useEffect(() => {
+        if (showModal) {
+            setTimeout(() => {
+                inputRef.current?.focus();
+            }, 100);
+        }
+    });
+
     async function getTodos() {
         try {
-            const response = await fetch(`${BASE_URL}/todo`);
+            const response = await authFetch(`/todo`);
             const result = await response.json();
             const mappedTodos = result.data.map((todo: TodoType) => ({
                 _id: todo._id,
@@ -50,30 +68,84 @@ export default function HomeScreen() {
 
     async function handleAddTodo() {
         try {
-            const response = await fetch(`${BASE_URL}/todo/add-todo`, {
+            setLoading(true);
+            const response = await authFetch(`/todo/add-todo`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                credentials: "include",
-                body: JSON.stringify({}),
+                body: JSON.stringify({ title: todo }),
             });
 
-            // console.log(response);
             const result = await response.json();
-            console.log(result);
 
-            // if(!response.ok){
-            //     const
-            // }
-            // if(!response.ok){
+            if (!response.ok) {
+                const errorData: AddTodoType = result.data[0];
+                setAddTodoError(errorData.msg);
+                throw new Error(errorData.msg);
+            }
+            setTodo("");
+            setAddTodoError(null);
+            await getTodos();
 
-            // }
-
-            // setTodo("");
-            // await getTodos();
+            toast.show("todo added!", {
+                type: "success",
+                duration: 2000,
+            });
         } catch (error) {
-            Alert.alert("Error");
+            if (error instanceof Error) {
+                toast.show(error.message, {
+                    type: "danger",
+                });
+            }
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    async function handleDeleteTodo(id: string) {
+        try {
+            const response = await authFetch(`/todo/delete/${id}`, {
+                method: "DELETE",
+            });
+            if (!response.ok) {
+                const error = new Error("Something wrong");
+                throw error;
+            }
+
+            await getTodos();
+            toast.show("todo deleted", {
+                type: "success",
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                toast.show(error.message || "unexpected error", {
+                    type: "danger",
+                });
+            }
+        }
+    }
+
+    async function handleUpdateTodo(id: string, title: string) {
+        try {
+            const response = await authFetch(`/todo/update/${id}`, {
+                method: "PUT",
+                body: JSON.stringify({ title: title }),
+            });
+            if (!response.ok) {
+                const error = new Error("something went wrong");
+                throw error;
+            }
+
+            const result = await response.json();
+            await getTodos();
+            console.log(result);
+            toast.show(result.message, {
+                type: "success",
+            });
+        } catch (error) {
+            if (error instanceof Error) {
+                toast.show(error.message, {
+                    type: "danger",
+                });
+            }
         }
     }
 
@@ -82,25 +154,32 @@ export default function HomeScreen() {
             {/* header */}
             <View className="bg-white pt-10 pb-3  px-6">
                 <Text className="text-xl font-bold text-black">
-                    {user?.name.toUpperCase()}'s TODO
+                    {user?.name.toUpperCase()}&apos;s TODO
                 </Text>
             </View>
 
             {/* content */}
             <View className="px-6 mt-5">
-                <View className="flex-row items-center gap-3">
+                <View className="flex-row items-center gap-3 ">
                     <TextInput
                         placeholder="Add new task..."
                         placeholderTextColor="#9CA3AF"
-                        className="flex-1 bg-white px-4 py-4 text-lg rounded-lg border border-gray-200"
+                        className={`flex-1 bg-white px-4 py-4 text-lg rounded-lg border ${addTodoError ? "border-red-500" : "border-gray-200"} `}
                         value={todo}
-                        onChangeText={(val) => setTodo(val)}
+                        onChangeText={(val) => {
+                            setTodo(val);
+                            setAddTodoError(null);
+                        }}
                     />
                     <TouchableOpacity
                         onPress={handleAddTodo}
-                        className="bg-blue-500 px-6 py-4 rounded-lg items-center justify-center"
+                        className="bg-blue-500 rounded-lg px-4 py-4 items-center justify-center"
                     >
-                        <Text className="text-white text-xl font-bold">+</Text>
+                        {loading ? (
+                            <ActivityIndicator color="#fff" size={10} />
+                        ) : (
+                            <Text className="text-white font-bold">+</Text>
+                        )}
                     </TouchableOpacity>
                 </View>
             </View>
@@ -114,18 +193,23 @@ export default function HomeScreen() {
                     keyExtractor={(item) => item._id}
                     renderItem={({ item }) => (
                         <TouchableOpacity
-                            onLongPress={() => setShowModal(true)}
+                            onLongPress={() => {
+                                setShowModal(true);
+                                setSelectedTodo(item);
+                            }}
                         >
                             <View className="bg-white rounded-lg p-4 mb-3 flex-row items-center justify-between border border-gray-100">
                                 {/* left checkbox and text */}
                                 <View className="flex-row items-center flex-1">
-                                    <TouchableOpacity className="w-6 h-6 rounded-full border-2 border-gray-300 mr-3"></TouchableOpacity>
                                     <Text className="text-lg text-gray-800 ">
                                         {item.title}
                                     </Text>
                                 </View>
-                                <TouchableOpacity className="w-8 h-8 justify-center items-center">
-                                    <Text className="text-red-500 text-xl font-semibold">
+                                <TouchableOpacity
+                                    onPress={() => handleDeleteTodo(item._id)}
+                                    className="w-10 h-10 justify-center items-center"
+                                >
+                                    <Text className="text-red-500  text-xl font-semibold">
                                         X
                                     </Text>
                                 </TouchableOpacity>
@@ -151,12 +235,29 @@ export default function HomeScreen() {
                         <View className="w-16 h-1 bg-gray-300 self-center rounded-full mb-4" />
                         <Text className="text-sm mb-1">Detail Todo</Text>
                         <TextInput
+                            ref={inputRef}
                             placeholder="Todo"
                             className="border border-gray-300 rounded-md px-3 py-2 mb-3"
+                            value={selectedTodo?.title || ""}
+                            onChangeText={(text) => {
+                                if (selectedTodo) {
+                                    setSelectedTodo({
+                                        ...selectedTodo,
+                                        title: text,
+                                    });
+                                }
+                            }}
                         />
                         <TouchableOpacity
                             className="bg-blue-500 py-4 rounded-lg"
-                            onPress={() => setShowModal(false)}
+                            onPress={() => {
+                                if (!selectedTodo) return;
+                                handleUpdateTodo(
+                                    selectedTodo._id,
+                                    selectedTodo.title
+                                );
+                                setShowModal(false);
+                            }}
                         >
                             <Text className="text-white text-center text-lg font-bold">
                                 Save

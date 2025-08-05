@@ -15,7 +15,7 @@ export default function ProtectedRoute({
         if (!loading && !user) {
             router.replace("/(auth)");
         }
-    }, [loading, user]);
+    }, [loading, user, router]);
 
     if (loading) {
         return (

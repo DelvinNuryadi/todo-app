@@ -8,6 +8,7 @@ import cors from "cors";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import todoRoutes from "./routes/todoRoutes.js";
+import errorHandler from "./middleware/error.middleware.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,7 +21,7 @@ const allowedOrigins = [
 app.use(
     cors({
         origin: allowedOrigins,
-        credentials: true, // kalau lo pakai cookie di auth
+        credentials: true, // kalau pakai cookie di auth
     })
 );
 
@@ -38,13 +39,6 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/todo", todoRoutes);
 
 // handling global error
-app.use((error, req, res, next) => {
-    const status = error.statusCode;
-    const message = error.message;
-    const data = error.data;
-    return res
-        .status(status)
-        .json({ success: false, message: message, data: data });
-});
+app.use(errorHandler);
 
 app.listen(PORT, () => console.log(`listening on http://localhost:${PORT}`));

@@ -1,17 +1,19 @@
 import jwt from "jsonwebtoken";
 
 const isAuth = async (req, res, next) => {
-    const { token } = req.cookies;
-    if (!token) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
         const error = new Error("Not authenticated");
         error.statusCode = 401;
         return next(error);
     }
 
+    const token = authHeader.split(" ")[1];
+
     try {
-        const tokenDecoded = jwt.verify(token, process.env.JWT_SECRET);
+        const tokenDecoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
         if (!tokenDecoded.id) {
-            const error = new Error("Not authorized");
+            const error = new Error("invalid or expired token");
             error.statusCode = 401;
             throw error;
         }

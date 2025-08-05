@@ -1,5 +1,10 @@
 import express from "express";
-import { login, logout, register } from "../controllers/authController.js";
+import {
+    login,
+    logout,
+    refreshAccessToken,
+    register,
+} from "../controllers/authController.js";
 import { body } from "express-validator";
 
 const router = express.Router();
@@ -26,5 +31,7 @@ router.post(
 );
 
 router.post("/logout", logout);
+
+router.post("/refresh-token", refreshAccessToken);
 
 export default router;
