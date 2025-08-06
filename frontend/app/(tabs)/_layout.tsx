@@ -19,7 +19,7 @@ export default function _Layout() {
                 name="welcome"
                 options={{
                     title: "Account",
-                    headerShown: true,
+                    headerShown: false,
                     tabBarIcon: ({ color, size }) => (
                         <AccountIcon width={size} height={size} color={color} />
                     ),
@@ -27,7 +27,7 @@ export default function _Layout() {
                         height: 60,
                     },
                     headerTitleStyle: {
-                        marginTop: -10,
+                        marginTop: -20,
                     },
                 }}
             />

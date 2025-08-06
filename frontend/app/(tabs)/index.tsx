@@ -13,6 +13,7 @@ import {
     View,
 } from "react-native";
 import { useToast } from "react-native-toast-notifications";
+import EditIcon from "../components/icons/EditIcon";
 
 type TodoType = {
     _id: string;
@@ -136,7 +137,6 @@ export default function HomeScreen() {
 
             const result = await response.json();
             await getTodos();
-            console.log(result);
             toast.show(result.message, {
                 type: "success",
             });
@@ -173,7 +173,7 @@ export default function HomeScreen() {
                     />
                     <TouchableOpacity
                         onPress={handleAddTodo}
-                        className="bg-blue-500 rounded-lg px-4 py-4 items-center justify-center"
+                        className="bg-blue-500 rounded-lg w-12 h-12 items-center justify-center"
                     >
                         {loading ? (
                             <ActivityIndicator color="#fff" size={10} />
@@ -192,29 +192,34 @@ export default function HomeScreen() {
                     data={todos}
                     keyExtractor={(item) => item._id}
                     renderItem={({ item }) => (
-                        <TouchableOpacity
-                            onLongPress={() => {
-                                setShowModal(true);
-                                setSelectedTodo(item);
-                            }}
-                        >
-                            <View className="bg-white rounded-lg p-4 mb-3 flex-row items-center justify-between border border-gray-100">
-                                {/* left checkbox and text */}
-                                <View className="flex-row items-center flex-1">
-                                    <Text className="text-lg text-gray-800 ">
-                                        {item.title}
-                                    </Text>
-                                </View>
+                        <View className="bg-white rounded-lg p-4 mb-3 flex-row items-center justify-between border border-gray-100">
+                            {/* left checkbox and text */}
+                            <View className="flex-row items-center gap-x-3">
                                 <TouchableOpacity
-                                    onPress={() => handleDeleteTodo(item._id)}
-                                    className="w-10 h-10 justify-center items-center"
+                                    onPress={() => {
+                                        setShowModal(true);
+                                        setSelectedTodo(item);
+                                    }}
                                 >
-                                    <Text className="text-red-500  text-xl font-semibold">
-                                        X
-                                    </Text>
+                                    <EditIcon
+                                        width={20}
+                                        height={20}
+                                        color="#000"
+                                    />
                                 </TouchableOpacity>
+                                <Text className=" text-lg text-gray-800 ">
+                                    {item.title}
+                                </Text>
                             </View>
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => handleDeleteTodo(item._id)}
+                                className="w-10 h-10 justify-center items-center"
+                            >
+                                <Text className="text-red-500  text-xl font-semibold">
+                                    X
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                     )}
                 />
             </View>

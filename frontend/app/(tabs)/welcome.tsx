@@ -2,6 +2,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { useToast } from "react-native-toast-notifications";
 import ProtectedRoute from "../components/ProtectedRoute";
+import LogoutIcons from "../components/icons/LogoutIcons";
 import LogoutImages from "../components/images/LogoutImages";
 
 export default function Welcome() {
@@ -23,17 +24,23 @@ export default function Welcome() {
 
     return (
         <ProtectedRoute>
-            <View className="flex-1 justify-center items-center px-6 ">
-                <LogoutImages width={200} height={500} />
+            <View className="flex-1 justify-center items-center px-6 relative">
+                <View className="w-full  aspect-square">
+                    <LogoutImages width="100%" height="100%" />
+                </View>
 
-                <TouchableOpacity
-                    onPress={handleLogout}
-                    className="w-full bg-blue-500 py-3 px-4 rounded-xl"
-                >
-                    <Text className="text-white text-xl font-bold text-center">
-                        Logout
-                    </Text>
-                </TouchableOpacity>
+                <View className="left-10 right-10 absolute bottom-8">
+                    <TouchableOpacity
+                        onPress={handleLogout}
+                        className="flex-row justify-center items-center w-full bg-blue-500 py-3 px-4 rounded-xl gap-x-2"
+                    >
+                        <LogoutIcons width={20} height={20} color={"#fff"} />
+
+                        <Text className="text-white text-xl font-bold text-center">
+                            Logout
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </ProtectedRoute>
     );
