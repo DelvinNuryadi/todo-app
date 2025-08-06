@@ -137,7 +137,6 @@ export const logout = async (req, res, next) => {
 export const refreshAccessToken = async (req, res, next) => {
     try {
         const token = req.cookies.refreshToken;
-        console.log("hello world");
         if (!token) {
             const error = new Error("invalid refresh token");
             error.statusCode = 401;

@@ -5,7 +5,7 @@ export const getAccessToken = async () => {
 };
 
 export const setAccessToken = async (accessToken: string) => {
-    return await SecureStore.setItemAsync("access", accessToken);
+    return await SecureStore.setItemAsync("accessToken", accessToken);
 };
 
 export const removeAccessToken = async () => {

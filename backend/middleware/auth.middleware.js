@@ -22,7 +22,7 @@ const isAuth = async (req, res, next) => {
         next();
     } catch (error) {
         if (!error.statusCode) {
-            error.statusCode = 500;
+            error.statusCode = 401;
         }
         next(error);
     }
